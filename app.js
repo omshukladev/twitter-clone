@@ -26,7 +26,7 @@ import authRoutes  from "./routes/auth.routes.js"
 
 
 //routes
-app.use("/healthcheck", healthcheck)
+app.use("/api", healthcheck)
 app.use("/api/auth", authRoutes)
 
 
