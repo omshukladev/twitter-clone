@@ -4,11 +4,11 @@ import { login, logout, signup } from "../controllers/auth.controllers.js";
 const router =express.Router();
 
 
-router.route("/login").get(login);
+router.route("/login").post(login);
 
-router.route("/signup").get(signup);
+router.route("/signup").post(signup);
 
-router.route("/logout").get(logout);
+router.route("/logout").post(logout);
 
 
 // router.get("/signup",(req,res)=>{
