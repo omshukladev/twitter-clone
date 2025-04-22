@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js"
 
 
 //generating method for acces and refresh token
-const generateAccessAndRefereshTokens = async (userId) => {
+const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
@@ -29,17 +29,18 @@ const login =  asyncHandler( async (req,res)=> {
     throw new apiError(400, "username required");
   }
   const user = await User.findOne({ username });
-  const isPasswordValid = await user.isPasswordCorrect(password);
 
   if (!user) {
     throw new apiError(404, "User does not exist");
   }
 
+  const isPasswordValid = await user.isPasswordCorrect(password);
+
   if (!isPasswordValid) {
     throw new apiError(401, "Invalid user credentials");
   }
 
-  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
   const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
@@ -102,7 +103,7 @@ const signup =  asyncHandler( async (req,res)=> {
     throw new apiError(500, "something went wrong while registering the user ");
   }
   //  generate tokens here
-  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
   //sending response to the user
   return res.status(201).json(new apiResponse(201, {user: createdUser,
     accessToken,
@@ -110,10 +111,47 @@ const signup =  asyncHandler( async (req,res)=> {
 });
 
 //logout
-const logout =  asyncHandler( async (req,res)=> {
-  return res
-  .status(200)
-  .json(new apiResponse(200, "OK", "you have hit the logout point"))
-})
+
+const logout = asyncHandler(async (req, res) => {
+  try {
+    // Check if the cookies exist
+    const accessTokenCookie = req.cookies.accessToken;
+    const refreshTokenCookie = req.cookies.refreshToken;
+
+    if (!accessTokenCookie || !refreshTokenCookie) {
+      return res.status(400).json(new apiResponse(400, {}, "No active session to log out from"));
+    }
+
+    // Clear the cookies
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+
+    res.clearCookie("accessToken", options);
+    res.clearCookie("refreshToken", options);
+
+    return res.status(200).json(new apiResponse(200, {}, "User logged out successfully"));
+  } catch (error) {
+    console.log("Error in logout controller", error.message);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+// //this below is the alternative if above logout didint work use this one 
+// const logout =  asyncHandler( async (req,res)=> {
+
+//   const options = {
+//     httpOnly: true,
+//     secure: true, // Make sure you set this correctly based on your environment (production or development)
+//   };
+// return res
+// .status(200)
+// .clearCookie("accessToken", options)
+// .clearCookie("refreshToken", options)
+// .json(new apiResponse(201, {}, "User logged Out"))
+// })
+
 
 export { login, signup, logout};
