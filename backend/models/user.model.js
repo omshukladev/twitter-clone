@@ -89,6 +89,7 @@ userSchema.pre("save", async function (next) {
 	next()
 })
 // custom methods password comprare kar ke true ya false bhej dega
+//bycrpt mai use hoga
 userSchema.methods.isPasswordCorrect = async function(password){
 	return await bcrypt.compare(password, this.password)
 	//password - client ka hai this.password - ye increpyt wala do db ke pass hai

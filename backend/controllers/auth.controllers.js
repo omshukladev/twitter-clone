@@ -20,21 +20,57 @@ const generateAccessAndRefereshTokens = async (userId) => {
   }
 };
 
-
+//login
 const login =  asyncHandler( async (req,res)=> {
+  const { username, password } = req.body;
+  
+
+  if (!username) {
+    throw new apiError(400, "username required");
+  }
+  const user = await User.findOne({ username });
+  const isPasswordValid = await user.isPasswordCorrect(password);
+
+  if (!user) {
+    throw new apiError(404, "User does not exist");
+  }
+
+  if (!isPasswordValid) {
+    throw new apiError(401, "Invalid user credentials");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user._id);
+
+  const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+  const options = {
+    httpOnly: true, //frontend cant interfear now 
+    secure: true,
+  };
+
   return res
-  .status(200)
-  .json(new apiResponse(200, "OK", "you have hit the login point"))
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new apiResponse(
+        201,
+        {
+          //we are sending the respon if the user want to save it in local storage --this all is data in apiresponse
+          user: loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User logged In Successfully"
+      )
+    );
 })
 
 
 //signup
-
-
 const signup =  asyncHandler( async (req,res)=> {
   const { fullName, email, username, password } = req.body;
-  // console.log("name: ", fullName);
-  // console.log("email: ", email);
+  
   if ([fullName, email, username, password].some((field) => field?.trim() === "")) {
     throw new apiError(400, "All Field Are Required");
   }
@@ -73,7 +109,7 @@ const signup =  asyncHandler( async (req,res)=> {
     refreshToken}, "User registered successfully "));
 });
 
-
+//logout
 const logout =  asyncHandler( async (req,res)=> {
   return res
   .status(200)
