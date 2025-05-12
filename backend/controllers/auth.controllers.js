@@ -139,8 +139,10 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 
-// //this below is the alternative if above logout didint work use this one 
-// const logout =  asyncHandler( async (req,res)=> {
+//this below is the alternative if above logout didint work use this one 
+
+
+//  const logout =  asyncHandler( async (req,res)=> {
 
 //   const options = {
 //     httpOnly: true,
@@ -151,7 +153,22 @@ const logout = asyncHandler(async (req, res) => {
 // .clearCookie("accessToken", options)
 // .clearCookie("refreshToken", options)
 // .json(new apiResponse(201, {}, "User logged Out"))
-// })
+// }) 
 
 
-export { login, signup, logout};
+// to check user is authinti cated or not
+
+const  getMe =  asyncHandler( async (req,res)=> {
+  const user = await User.findById(req.user._id).select("-password");
+
+  if (!user) {
+    throw new apiError(404, "User not found getME");
+  }
+
+  return res.status(200).json(
+    new apiResponse(200, user, "Getme called")
+  );
+});
+
+
+export { login, signup, logout, getMe};

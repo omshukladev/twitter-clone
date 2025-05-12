@@ -29,6 +29,20 @@ import authRoutes  from "./routes/auth.routes.js"
 app.use("/api", healthcheck)
 app.use("/api/auth", authRoutes)
 
+// ✅ GLOBAL ERROR HANDLER — Add this at the bottom
+
+//basically i made this because of getme funtion was not handling error properly  because of middleware 
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler:", err.message);
+
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    statusCode: err.statusCode || 500,
+    errors: err.errors || [],
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
+});
 
 
 export default app
