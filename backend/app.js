@@ -23,15 +23,21 @@ app.use(cookieParser())
 //import routes
 import healthcheck  from "./routes/healthcheck.routes.js"
 import authRoutes  from "./routes/auth.routes.js"
+import userRoutes  from "./routes/user.routes.js"
 
 
 //routes
 app.use("/api", healthcheck)
 app.use("/api/auth", authRoutes)
+app.use("/api/users", userRoutes)
+
+
+
 
 // ✅ GLOBAL ERROR HANDLER — Add this at the bottom
 
 //basically i made this because of getme funtion was not handling error properly  because of middleware 
+
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err.message);
 

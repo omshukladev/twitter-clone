@@ -7,6 +7,8 @@ const router =express.Router();
 
 
 router.route("/login").post(login);
+// another way to write this is 
+// router.post("/login",login)
 
 router.route("/signup").post(signup);
 
