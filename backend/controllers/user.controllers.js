@@ -2,6 +2,7 @@ import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js"
+import { Notification } from "../models/notification.model.js";
 
 //we are taking username form url and finding their profile
 const getUserProfile =  asyncHandler( async (req,res)=>{
@@ -42,13 +43,49 @@ const followUnfollowUser = asyncHandler(async (req,res)=>{
   //.includes(id): A method that checks if the id is present in the following array.
   const isFollowing = currentUser.following.includes(id);
 
+
+  //push add , pull remove 
   if(isFollowing){
     //unfollow the user
-    //okojiojiojoviowcncnnconv
+    await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
+    //This is a Mongoose method that finds a document by its _id (here, the variable id) and updates it with the given update operation.
+		await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+
+    return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        "User Unfollowed Successfully"
+      )
+    );
   }
   else{
     //follow the user 
+    await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
+		await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+    
+    // to send notification you have to make notification model
+    //Saves the notification to the MongoDB database using Mongoose. --basically it will send notification to mongoose db atlas
+    const newNotification = new Notification({
+				type: "follow",
+				from: req.user._id,  //follower 
+				to: userToModify._id, //followed 
+			});
+    await newNotification.save();
+
+     return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        "User Followed  Successfully"
+      )
+    );
   }
 })
 
 export {getUserProfile, followUnfollowUser}
+
+// ❓ Why do we create notifications?
+// Notifications are created to inform users about important actions or events that involve them. In your case, you're building a social feature (like on Instagram, Twitter, etc.), so notifications keep users engaged and aware of interactions.
