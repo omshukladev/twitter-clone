@@ -85,7 +85,37 @@ const followUnfollowUser = asyncHandler(async (req,res)=>{
   }
 })
 
-export {getUserProfile, followUnfollowUser}
+const getSuggestedProfile = asyncHandler(async (req, res)=>{
+  const userId = req.user._id;
+
+  const usersFollowedByMe = await User.findById(userId).select("following");
+
+  const users = await User.aggregate([
+    {
+      $match:{
+        _id:{$ne:userId},
+      },
+      },
+
+    {$sample:{size:10}},
+     { $project: { password: 0 } }  // Hides password directly in DB query
+  ]);
+  const filteredUser = users.filter((user)=>!usersFollowedByMe.following.includes(user._id));
+  const suggestedUser = filteredUser.slice(0,4);
+  
+  suggestedUser.forEach((user)=>(user.password=null))
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        suggestedUser
+      )
+    );
+})
+
+export {getUserProfile, followUnfollowUser ,getSuggestedProfile}
 
 // ❓ Why do we create notifications?
 // Notifications are created to inform users about important actions or events that involve them. In your case, you're building a social feature (like on Instagram, Twitter, etc.), so notifications keep users engaged and aware of interactions.
