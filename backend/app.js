@@ -24,12 +24,14 @@ app.use(cookieParser())
 import healthcheck  from "./routes/healthcheck.routes.js"
 import authRoutes  from "./routes/auth.routes.js"
 import userRoutes  from "./routes/user.routes.js"
+import postRoutes from "./routes/post.routes.js"
 
 
 //routes
 app.use("/api", healthcheck)
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
+app.use("/api/post", postRoutes)
 
 
 

@@ -110,8 +110,9 @@ const updateUser = asyncHandler(async (req, res) => {
       throw new apiError(404, "Current password is incorrect");
     }
     //hashing your new password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt); //saving my new password as offical password
+    // use this as hashing by model in user schema
+      user.password = newPassword;
+
   }
   //upload it on cloudinary -- alternative
   // if (profileImg) {
