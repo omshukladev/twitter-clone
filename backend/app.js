@@ -31,7 +31,7 @@ import postRoutes from "./routes/post.routes.js"
 app.use("/api", healthcheck)
 app.use("/api/auth", authRoutes)
 app.use("/api/users", userRoutes)
-app.use("/api/post", postRoutes)
+app.use("/api/posts", postRoutes)
 
 
 

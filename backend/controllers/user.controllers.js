@@ -1,8 +1,7 @@
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { v2 as cloudinary } from "cloudinary"; //alternative
+import { cloudinary } from "../utils/cloudinary.js"; //alternative
 import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
 import { Notification } from "../models/notification.model.js";
@@ -111,66 +110,29 @@ const updateUser = asyncHandler(async (req, res) => {
     }
     //hashing your new password
     // use this as hashing by model in user schema
-      user.password = newPassword;
-
+    user.password = newPassword;
   }
-  //upload it on cloudinary -- alternative
-  // if (profileImg) {
-  // 		if (user.profileImg) {
-  // 			// https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
-  // 			await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
-  // 		}
-
-  // 		const uploadedResponse = await cloudinary.uploader.upload(profileImg);
-  // 		profileImg = uploadedResponse.secure_url;
-  // 	}
-
-  // 	if (coverImg) {
-  // 		if (user.coverImg) {
-  // 			await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
-  // 		}
-
-  // 		const uploadedResponse = await cloudinary.uploader.upload(coverImg);
-  // 		coverImg = uploadedResponse.secure_url;
-  // 	}
-
-  //uploadOnCloudinary
-  // Upload new profile image
-  if (req.files?.profileImg?.[0]?.path) {
-    const localPath = req.files.profileImg[0].path;
-
-    // Destroy old profile image
+  //upload it on cloudinary
+  if (profileImg) {
     if (user.profileImg) {
       // https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
-      // basicall it will spilt all the url take last par before png and remove it here is this- zmxorcxexpdbh8r0bkjb
-
-      const publicId = user.profileImg.split("/").pop().split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+      await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
     }
 
-    // Upload new profile image via your utils
-    const uploadedResponse = await uploadOnCloudinary(localPath);
-    if (uploadedResponse?.secure_url) {
-      profileImg = uploadedResponse.secure_url;
-    }
+    const uploadedResponse = await cloudinary.uploader.upload(profileImg);
+    profileImg = uploadedResponse.secure_url;
   }
 
-  // Upload new cover image
-  if (req.files?.coverImg?.[0]?.path) {
-    const localPath = req.files.coverImg[0].path;
-
-    // Destroy old cover image
+  if (coverImg) {
     if (user.coverImg) {
-      const publicId = user.coverImg.split("/").pop().split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+      await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
     }
-   
-    // Upload new cover image via your utils
-    const uploadedResponse = await uploadOnCloudinary(localPath);
-    if (uploadedResponse?.secure_url) {
-      coverImg = uploadedResponse.secure_url;
-    }
+
+    const uploadedResponse = await cloudinary.uploader.upload(coverImg);
+    coverImg = uploadedResponse.secure_url;
   }
+
+
   // it will take old values if not updated
   user.fullName = fullName || user.fullName;
   user.email = email || user.email;
